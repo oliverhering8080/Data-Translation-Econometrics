@@ -5,3 +5,7 @@ date: "3/4/2022"
 output: html_document
 ---
 
+
+1. How has COVID affected the health of the retail industry, as measured by employment?
+2. How has retail fared relative to other industries?
+3. Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
