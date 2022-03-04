@@ -1,0 +1,7 @@
+---
+title: "Data Translation Project - Econometrics WQ22"
+author: "Oliver Hering, Bethany Locke, Zack Carey, Jenna Maeda"
+date: "3/4/2022"
+output: html_document
+---
+
