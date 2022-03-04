@@ -5,7 +5,21 @@ date: "3/4/2022"
 output: html_document
 ---
 
-
 1. How has COVID affected the health of the retail industry, as measured by employment?
 2. How has retail fared relative to other industries?
 3. Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
+
+
+```{r}
+install.packages('ipumsr')
+
+library(haven)
+library(tidyverse)
+library(ipumsr)
+```
+
+# Reading in the Data
+```{r}
+ddi <- read_ipums_ddi("cps_00001.xml")
+data <- read_ipums_micro(ddi)
+```
