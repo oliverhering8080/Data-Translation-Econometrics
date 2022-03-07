@@ -23,3 +23,6 @@ library(ipumsr)
 ddi <- read_ipums_ddi("cps_00001.xml")
 data <- read_ipums_micro(ddi)
 ```
+
+
+# Adding a binary variable that is 0 before covid and 1 after/during covid
