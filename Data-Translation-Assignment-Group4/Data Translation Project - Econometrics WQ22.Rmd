@@ -15,6 +15,9 @@ library(haven)
 library(tidyverse)
 library(ipumsr)
 library(lubridate)
+library(jtools)
+library(vtable)
+library(fixest)
 ```
 
 # Reading in the Data
@@ -62,13 +65,41 @@ grouped_dates <- data %>%
 
 # Question 1: How has COVID affected the health of the retail industry, as measured by employment?
 ```{r}
+#selecting only retail trade workers
 q1data <- data %>%
   filter(indname == 'Retail Trade') %>%
   select(date, covid, EMPSTAT)
 
-grouped <- q1data %>%
-  group_by(date) %>%
-  summarise(unique(q1data$EMPSTAT))
+q1data %>% count(EMPSTAT)
 
-unique(q1data$EMPSTAT)
+#binary variable for if employed (1) or not (0).
+q1data$employed <- ifelse(q1data$EMPSTAT == 10, 1, 0)
+
+m1 <- lm(employed ~ covid, data = q1data)
+export_summs(m1, digits = 3)
+```
+
+# Question 2: How has retail fared relative to other industries?
+```{r}
+#binary variable for if the industry is retail (1) or not (0)
+data$retail_industry <- ifelse(data$indname == 'Retail Trade', 1, 0)
+
+data <- data %>%
+  relocate(retail_industry, .after = indname)
+
+data$employed <- ifelse(data$EMPSTAT == 10, 1, 0)
+
+#regular regression model
+m2 <- lm(employed ~ covid*retail_industry, data = data)
+
+#fixed effects regression model
+m2feols <- feols(employed ~ covid:retail_industry | indname + date, data = data)
+
+
+export_summs(m2, m2feols, digits = 3)
+```
+
+# Question 3: Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
+```{r}
+
 ```
