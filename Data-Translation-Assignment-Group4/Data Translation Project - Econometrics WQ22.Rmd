@@ -11,6 +11,7 @@ output: html_document
 
 
 ```{r}
+library(dplyr)
 library(haven)
 library(tidyverse)
 library(ipumsr)
@@ -18,7 +19,6 @@ library(lubridate)
 library(jtools)
 library(vtable)
 library(fixest)
-library(plyr)
 ```
 
 # Reading in the Data
@@ -80,6 +80,19 @@ q1data$employed <- ifelse(q1data$EMPSTAT == 10, 1, 0)
 m1 <- lm(employed ~ covid, data = q1data)
 export_summs(m1, digits = 3)
 
+q1datatest <- q1data
+
+q1datatest$occ <- ave(seq(nrow(q1datatest)), q1datatest$employed, q1datatest$date, FUN = length)
+
+q1count <- q1datatest %>%
+  group_by(date, employed, covid) %>%
+  summarise(occ = mean(occ))
+
+detach("package:dplyr", unload=TRUE)
+library(plyr)
+q1rate <- ddply(q1count, .(date), transform, rate = occ/sum(occ))
+detach("package:plyr", unload=TRUE)
+library(dplyr)
 ```
 
 # Question 2: How has retail fared relative to other industries?
