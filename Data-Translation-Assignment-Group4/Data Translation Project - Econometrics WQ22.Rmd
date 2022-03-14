@@ -11,6 +11,7 @@ output: html_document
 
 
 ```{r}
+install.packages('ggthemes')
 library(dplyr)
 library(haven)
 library(tidyverse)
@@ -19,6 +20,7 @@ library(lubridate)
 library(jtools)
 library(vtable)
 library(fixest)
+library(ggthemes)
 ```
 
 # Reading in the Data
@@ -66,6 +68,7 @@ grouped_dates <- data %>%
 
 
 
+
 # Question 1: How has COVID affected the health of the retail industry, as measured by employment?
 ```{r}
 #selecting only retail trade workers
@@ -95,6 +98,7 @@ detach("package:plyr", unload=TRUE)
 library(dplyr)
 ```
 
+
 # Question 2: How has retail fared relative to other industries?
 ```{r}
 #binary variable for if the industry is retail (1) or not (0)
@@ -113,6 +117,63 @@ m2feols <- feols(employed ~ covid:retail_industry | indname + date, data = data)
 
 
 export_summs(m2, m2feols, digits = 3)
+```
+
+
+# Summary Statistics of dataset before question 3 analysis
+```{r}
+# Age distribution
+age_data_summary <- age_data %>%
+  count(age_bins)
+
+age_data_summary$age_bins <- factor(age_data_summary$age_bins, levels = c('teens', '20s', '30s', '40s', '50s', '60s', '70s'))
+
+age_barplot <- ggplot(age_data_summary, aes(x = age_bins, y = n)) + 
+  geom_bar(stat = 'identity', width = 0.6) +
+  ggtitle('Distribution of Age in dataset') +
+  labs(x = 'Age', y = 'Count')
+
+require(scales)
+age_barplot + scale_y_continuous(labels = comma)
+```
+```{r}
+# Race distribution
+race_data_summary <- race_data %>%
+  count(race_bins)
+
+race_barplot <- ggplot(race_data_summary, aes(x = race_bins, y = n)) + 
+  geom_bar(stat = 'identity', width = 0.6) +
+  xlab('Race') +
+  ylab('Count (log10 scaled)') +
+  ggtitle('Distribution of Race in dataset')
+
+require(scales)
+race_barplot + scale_y_continuous(labels = comma, trans = 'log10')
+```
+
+```{r}
+# Education distribution
+education_data_summary <- education_data %>%
+  count(education_bins)
+
+education_data_summary$education_bins <- factor(education_data_summary$education_bins, 
+                                                levels = c('below HS', 
+                                                           'HS graduate', 
+                                                           'some college', 
+                                                           'Associates degree', 
+                                                           'Bachelors degree', 
+                                                           'Professional school degree', 
+                                                           'Masters degree',
+                                                           'Doctorate degree'))
+
+education_barplot <- ggplot(education_data_summary, aes(x = education_bins, y = n)) + 
+  geom_bar(stat = 'identity', width = 0.6) +
+  xlab('Level of Education') +
+  ylab('Count') +
+  ggtitle('Distribution of Education in dataset')
+
+require(scales)
+education_barplot + scale_y_continuous(labels = comma) + theme(axis.text.x = element_text(angle = 45, vjust = 0.9, hjust=0.8))
 ```
 
 
