@@ -11,7 +11,6 @@ output: html_document
 
 
 ```{r}
-install.packages('ggthemes')
 library(dplyr)
 library(haven)
 library(tidyverse)
@@ -20,7 +19,6 @@ library(lubridate)
 library(jtools)
 library(vtable)
 library(fixest)
-library(ggthemes)
 ```
 
 # Reading in the Data
@@ -83,6 +81,8 @@ q1data$employed <- ifelse(q1data$EMPSTAT == 10, 1, 0)
 m1 <- lm(employed ~ covid, data = q1data)
 export_summs(m1, digits = 3)
 
+
+# Adding an employment rate variable
 q1datatest <- q1data
 
 q1datatest$occ <- ave(seq(nrow(q1datatest)), q1datatest$employed, q1datatest$date, FUN = length)
@@ -121,7 +121,22 @@ export_summs(m2, m2feols, digits = 3)
 
 
 # Summary Statistics of dataset before question 3 analysis
+# Age
 ```{r}
+# putting ages into bins
+age_data <- data %>%
+  mutate(age_bins = case_when(
+    AGE %in% c(16:19) ~ 'teens',
+    AGE %in% c(20:29) ~ '20s',
+    AGE %in% c(30:39) ~ '30s',
+    AGE %in% c(40:49) ~ '40s',
+    AGE %in% c(50:59) ~ '50s',
+    AGE %in% c(60:69) ~ '60s',
+    AGE %in% c(70:79) ~ '70s'))
+
+age_data <- age_data %>%
+  relocate(age_bins, .after = AGE)
+
 # Age distribution
 age_data_summary <- age_data %>%
   count(age_bins)
@@ -136,7 +151,24 @@ age_barplot <- ggplot(age_data_summary, aes(x = age_bins, y = n)) +
 require(scales)
 age_barplot + scale_y_continuous(labels = comma)
 ```
+
+# Race
 ```{r}
+# replacing race codes with text
+race_data <- data %>%
+  mutate(race_bins = case_when(
+    RACE %in% c(100) ~ 'white',
+    RACE %in% c(200) ~ 'black',
+    RACE %in% c(300) ~ 'american indian',
+    RACE %in% c(651) ~ 'asian only',
+    RACE %in% c(652) ~ 'hawaiian/pacific islander',
+    RACE %in% c(700) ~ 'other',
+    RACE %in% c(801:820, 830) ~ 'mixed'))
+
+race_data <- race_data %>%
+  relocate(race_bins, .after = RACE)
+
+
 # Race distribution
 race_data_summary <- race_data %>%
   count(race_bins)
@@ -151,7 +183,26 @@ require(scales)
 race_barplot + scale_y_continuous(labels = comma, trans = 'log10')
 ```
 
+# Education
 ```{r}
+# replacing Education codes with text
+education_data <- data %>%
+  mutate(education_bins = case_when(
+    EDUC %in% c(0:72) ~ 'below HS',
+    EDUC %in% c(73) ~ 'HS graduate',
+    EDUC %in% c(91:92) ~ 'Associates degree',
+    EDUC %in% c(80,81,90,100,110) ~ 'some college',
+    EDUC %in% c(111) ~ 'Bachelors degree',
+    EDUC %in% c(120:122) ~ 'Additional school No degree',
+    EDUC %in% c(123) ~ 'Masters degree',
+    EDUC %in% c(124) ~ 'Professional school degree',
+    EDUC %in% c(125) ~ 'Doctorate degree',))
+   
+
+education_data <- education_data %>%
+  relocate(education_bins, .after = EDUC)
+
+
 # Education distribution
 education_data_summary <- education_data %>%
   count(education_bins)
@@ -180,63 +231,18 @@ education_barplot + scale_y_continuous(labels = comma) + theme(axis.text.x = ele
 
 # Question 3: Retail needs to worry about who has money to spend - what has changed about who is working and earning money?
 ```{r}
-# putting ages into bins
-age_data <- data %>%
-  mutate(age_bins = case_when(
-    AGE %in% c(16:19) ~ 'teens',
-    AGE %in% c(20:29) ~ '20s',
-    AGE %in% c(30:39) ~ '30s',
-    AGE %in% c(40:49) ~ '40s',
-    AGE %in% c(50:59) ~ '50s',
-    AGE %in% c(60:69) ~ '60s',
-    AGE %in% c(70:79) ~ '70s'))
-
-age_data <- age_data %>%
-  relocate(age_bins, .after = AGE)
-
 # employed regressed on age
 age_reg <- lm(employed ~ age_bins*covid, data = age_data)
 export_summs(age_reg, digits = 3)
 ```
 
 ```{r}
-# replacing race codes with text
-race_data <- data %>%
-  mutate(race_bins = case_when(
-    RACE %in% c(100) ~ 'white',
-    RACE %in% c(200) ~ 'black',
-    RACE %in% c(300) ~ 'american indian',
-    RACE %in% c(651) ~ 'asian only',
-    RACE %in% c(652) ~ 'hawaiian/pacific islander',
-    RACE %in% c(700) ~ 'other',
-    RACE %in% c(801:820, 830) ~ 'mixed'))
-
-race_data <- race_data %>%
-  relocate(race_bins, .after = RACE)
-
 # employed regressed on race
 race_reg <- feols(employed ~ i(race_bins, ref = 'white')*covid, data = race_data)
 export_summs(race_reg, digits = 3)
 ```
 
 ```{r}
-# replacing Education codes with text
-education_data <- data %>%
-  mutate(education_bins = case_when(
-    EDUC %in% c(0:72) ~ 'below HS',
-    EDUC %in% c(73) ~ 'HS graduate',
-    EDUC %in% c(91:92) ~ 'Associates degree',
-    EDUC %in% c(80,81,90,100,110) ~ 'some college',
-    EDUC %in% c(111) ~ 'Bachelors degree',
-    EDUC %in% c(120:122) ~ 'Additional school No degree',
-    EDUC %in% c(123) ~ 'Masters degree',
-    EDUC %in% c(124) ~ 'Professional school degree',
-    EDUC %in% c(125) ~ 'Doctorate degree',))
-   
-
-education_data <- education_data %>%
-  relocate(education_bins, .after = EDUC)
-
 # employed regressed on education
 education_reg <- feols(employed ~ i(education_bins, ref = 'HS graduate')*covid, data = education_data)
 export_summs(education_reg, digits = 3)
