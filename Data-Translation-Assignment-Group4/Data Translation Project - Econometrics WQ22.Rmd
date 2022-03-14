@@ -116,6 +116,8 @@ q1rate <- ddply(q1count, .(date, indname), transform, rate = occ/sum(occ)) %>%
 q1retailrate <- ddply(q1retail, .(date), transform, rate = occ/sum(occ))
 detach("package:plyr", unload=TRUE)
 library(dplyr)
+
+q1rate <- filter(q1rate, employed == 1)
 ```
 
 ```{r}
