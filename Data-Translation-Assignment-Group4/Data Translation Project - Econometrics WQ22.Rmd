@@ -121,11 +121,12 @@ q1rate <- filter(q1rate, employed == 1)
 ```
 
 ```{r}
-ggplot(q1rate, aes(date, rate, color = indname, group = indname)) + 
+ggplot(q1rate, aes(date, rate, color = employed, group = employed)) + 
   stat_summary(geom = 'line') +
   geom_vline(xintercept = as.Date('2020-03-01')) +
   theme_minimal()
 ```
+
 
 # Question 2: How has retail fared relative to other industries?
 ```{r}
@@ -147,6 +148,12 @@ m2feols <- feols(employed ~ covid:retail_industry | indname + date, data = data)
 export_summs(m2, m2feols, digits = 3)
 ```
 
+```{r}
+ggplot(q1rate, aes(date, rate, color = indname, group = indname)) + 
+  stat_summary(geom = 'line') +
+  geom_vline(xintercept = as.Date('2020-03-01')) +
+  theme_minimal()
+```
 
 # Summary Statistics of dataset before question 3 analysis
 # Age
